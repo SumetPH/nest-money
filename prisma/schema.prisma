@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountType {
+  cash
+  bank
+  saving
+  credit
+  debt
+}
+
+model account {
+  id          Int          @id
+  title       String
+  created_at  DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at  DateTime?    @db.Timestamp(6)
+  type        AccountType?
+  credit_date Int?
+  is_hidden   Boolean      @default(false)
+
+  transaction   transaction[]
+  budgetAccount budgetAccount[]
+}
+
+enum CategoryType {
+  expense
+  income
+}
+
+model category {
+  id         Int          @id
+  title      String
+  created_at DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at DateTime?    @db.Timestamp(6)
+  type       CategoryType
+  parent_id  Int?
+
+  parent   category?  @relation("Subcategories", fields: [parent_id], references: [id])
+  children category[] @relation("Subcategories")
+
+  transaction    transaction[]
+  budgetCategory budgetCategory[]
+}
+
+model type {
+  id         Int       @id
+  title      String
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+
+  transaction transaction[]
+}
+
+model transaction {
+  id          Int       @id @default(autoincrement())
+  amount      Decimal   @db.Decimal(10, 2)
+  type_id     Int?
+  account_id  Int?
+  category_id Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  note        String?
+
+  type     type?     @relation(fields: [type_id], references: [id])
+  account  account?  @relation(fields: [account_id], references: [id])
+  category category? @relation(fields: [category_id], references: [id])
+}
+
+model budget {
+  id         Int      @id @default(autoincrement())
+  title      String
+  amount     Decimal  @db.Decimal(10, 2)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  start_date Int
+
+  budgetAccount  budgetAccount[]
+  budgetCategory budgetCategory[]
+}
+
+model budgetAccount {
+  budget_id  Int
+  account_id Int
+
+  budget  budget  @relation(fields: [budget_id], references: [id])
+  account account @relation(fields: [account_id], references: [id])
+
+  @@id([budget_id, account_id])
+}
+
+model budgetCategory {
+  budget_id   Int
+  category_id Int
+
+  budget   budget   @relation(fields: [budget_id], references: [id])
+  category category @relation(fields: [category_id], references: [id])
+
+  @@id([budget_id, category_id])
+}
