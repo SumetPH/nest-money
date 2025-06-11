@@ -36,7 +36,66 @@ export class AccountService {
           .toFixed(2),
       }));
 
-      return accountList;
+      const cash = {
+        title: 'เงินสด',
+        balance: '0',
+        list: [] as typeof accountList,
+      };
+      const bank = {
+        title: 'ธนาคาร',
+        balance: '0',
+        list: [] as typeof accountList,
+      };
+      const credit = {
+        title: 'เครดิต',
+        balance: '0',
+        list: [] as typeof accountList,
+      };
+      const saving = {
+        title: 'เงินเก็บ',
+        balance: '0',
+        list: [] as typeof accountList,
+      };
+      const debt = {
+        title: 'หนี้สิน',
+        balance: '0',
+        list: [] as typeof accountList,
+      };
+
+      for (const acc of accountList) {
+        if (acc.type === 'cash') {
+          cash.list.push(acc);
+          cash.balance = (Number(cash.balance) + Number(acc.balance)).toFixed(
+            2,
+          );
+        }
+        if (acc.type === 'bank') {
+          bank.list.push(acc);
+          bank.balance = (Number(bank.balance) + Number(acc.balance)).toFixed(
+            2,
+          );
+        }
+        if (acc.type === 'credit') {
+          credit.list.push(acc);
+          credit.balance = (
+            Number(credit.balance) + Number(acc.balance)
+          ).toFixed(2);
+        }
+        if (acc.type === 'saving') {
+          saving.list.push(acc);
+          saving.balance = (
+            Number(saving.balance) + Number(acc.balance)
+          ).toFixed(2);
+        }
+        if (acc.type === 'debt') {
+          debt.list.push(acc);
+          debt.balance = (Number(debt.balance) + Number(acc.balance)).toFixed(
+            2,
+          );
+        }
+      }
+
+      return [cash, bank, credit, saving, debt];
     } catch (error) {
       console.error(error);
       if (error instanceof HttpException) throw error;
