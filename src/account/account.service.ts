@@ -19,7 +19,7 @@ export class AccountService {
           transaction: true,
         },
         orderBy: {
-          type: 'asc',
+          title: 'asc',
         },
       });
 
@@ -103,6 +103,20 @@ export class AccountService {
     }
   }
 
+  async findOne(id: number) {
+    try {
+      return await this.prisma.account.findUnique({
+        where: {
+          id: id,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(error as Error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async create(accountDto: CreateAccountDto) {
     try {
       const accountLastId = await this.prisma.account.findFirst({
@@ -115,7 +129,11 @@ export class AccountService {
         data: {
           id: accountLastId ? accountLastId.id + 1 : 1,
           title: accountDto.title,
-          created_at: accountDto.created_at ?? new Date(),
+          type: accountDto.type,
+          credit_date: accountDto.credit_date,
+          is_hidden: accountDto.is_hidden,
+          created_at:
+            dayjs(accountDto.created_at).toISOString() ?? dayjs().toDate(),
         },
       });
     } catch (error) {
@@ -133,6 +151,9 @@ export class AccountService {
         },
         data: {
           title: accountDto.title,
+          type: accountDto.type,
+          credit_date: accountDto.credit_date,
+          is_hidden: accountDto.is_hidden,
           created_at: accountDto.created_at ?? new Date(),
           updated_at: new Date(),
         },

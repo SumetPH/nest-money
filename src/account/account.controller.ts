@@ -19,6 +19,11 @@ export class AccountController {
     return this.accountService.findAll();
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.accountService.findOne(Number(id));
+  }
+
   @Post()
   create(@Body() accountDto: CreateAccountDto) {
     return this.accountService.create(accountDto);
@@ -26,16 +31,16 @@ export class AccountController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() accountDto: CreateAccountDto) {
-    return this.accountService.update(accountDto, +id);
+    return this.accountService.update(accountDto, Number(id));
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.accountService.remove(+id);
+    return this.accountService.remove(Number(id));
   }
 
   @Get('credit-summary/:id')
   accountCreditSummary(@Param('id') id: string) {
-    return this.accountService.accountCreditSummary({ id: +id });
+    return this.accountService.accountCreditSummary({ id: Number(id) });
   }
 }
