@@ -3,23 +3,27 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import {
+  UpdateAccountDto,
+  UpdateAccountSortDto,
+} from './dto/update-account.dto';
 dayjs.extend(utc);
 
 @Injectable()
 export class AccountService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll({ showHidden }: { showHidden: boolean }) {
     try {
       const account = await this.prisma.account.findMany({
         where: {
-          is_hidden: false,
+          is_hidden: showHidden ? undefined : false,
         },
         include: {
           transaction: true,
         },
         orderBy: {
-          title: 'asc',
+          sort: 'asc',
         },
       });
 
@@ -143,21 +147,46 @@ export class AccountService {
     }
   }
 
-  async update(accountDto: CreateAccountDto, id: number) {
+  async update(accountDto: UpdateAccountDto, id: number) {
     try {
       return await this.prisma.account.update({
         where: {
           id: id,
         },
         data: {
-          title: accountDto.title,
-          type: accountDto.type,
-          credit_date: accountDto.credit_date,
-          is_hidden: accountDto.is_hidden,
-          created_at: accountDto.created_at ?? new Date(),
+          title: accountDto?.title,
+          type: accountDto?.type,
+          credit_date: accountDto?.credit_date,
+          is_hidden: accountDto?.is_hidden,
+          created_at: accountDto?.created_at ?? new Date(),
           updated_at: new Date(),
+          sort: accountDto?.sort,
         },
       });
+    } catch (error) {
+      console.error(error);
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(error as Error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateSort(data: UpdateAccountSortDto) {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        for (const d of data.sort) {
+          await tx.account.update({
+            where: {
+              id: d.id,
+            },
+            data: {
+              sort: d.sort,
+            },
+          });
+        }
+      });
+      return {
+        message: 'account sort updated',
+      };
     } catch (error) {
       console.error(error);
       if (error instanceof HttpException) throw error;

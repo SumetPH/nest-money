@@ -24,4 +24,8 @@ export class CreateAccountDto {
   @IsOptional()
   @IsDateString()
   created_at?: string;
+
+  @IsOptional()
+  @IsNumber()
+  sort?: number;
 }

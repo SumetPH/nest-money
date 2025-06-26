@@ -23,6 +23,7 @@ model account {
   type        AccountType?
   credit_date Int?
   is_hidden   Boolean      @default(false)
+  sort        Int?
 
   transaction   transaction[]
   budgetAccount budgetAccount[]

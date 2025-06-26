@@ -6,17 +6,24 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
+import {
+  UpdateAccountDto,
+  UpdateAccountSortDto,
+} from './dto/update-account.dto';
 
 @Controller('account')
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
   @Get()
-  findAll() {
-    return this.accountService.findAll();
+  findAll(@Query('showHidden') showHidden: string) {
+    return this.accountService.findAll({
+      showHidden: showHidden === 'true' ? true : false,
+    });
   }
 
   @Get(':id')
@@ -29,8 +36,13 @@ export class AccountController {
     return this.accountService.create(accountDto);
   }
 
+  @Post('/sort')
+  updateSort(@Body() body: UpdateAccountSortDto) {
+    return this.accountService.updateSort(body);
+  }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() accountDto: CreateAccountDto) {
+  update(@Param('id') id: string, @Body() accountDto: UpdateAccountDto) {
     return this.accountService.update(accountDto, Number(id));
   }
 
